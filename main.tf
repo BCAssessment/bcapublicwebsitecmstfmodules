@@ -220,4 +220,4 @@ resource "azurerm_postgresql_firewall_rule" "postgresql-fw-rule" {
 #   client_key             = data.azurerm_kubernetes_cluster.aks.client_key
 #   cluster_ca_certificate = data.azurerm_kubernetes_cluster.aks.cluster_ca_certificate
 # }
-//kubectl apply -f https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/deployment/provider-azure-installer.yaml --namespace azure-akv
+#kubectl apply -f https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/deployment/provider-azure-installer.yaml --namespace azure-akv
