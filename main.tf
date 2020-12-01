@@ -80,9 +80,9 @@ resource "azurerm_container_registry" "acr" {
 
 }
 
-data "azuread_service_principal" "aks_principal" {
-  application_id = var.client_id
-}
+# data "azuread_service_principal" "aks_principal" {
+#   application_id = var.client_id
+# }
 
 # TODO: removeing this for now - can't seem to get it working - need to manually execute the AcrPull role
 # data "azurerm_subscription" "primary" {}
@@ -96,63 +96,63 @@ data "azuread_service_principal" "aks_principal" {
 #   skip_service_principal_aad_check = true
 # }
 
-resource "azurerm_key_vault" "akv" {
-  name                        = var.avk_name
-  location                    = azurerm_resource_group.rg.location
-  resource_group_name         = azurerm_resource_group.rg.name
-  enabled_for_disk_encryption = true
-  tenant_id                   = data.azurerm_client_config.current.tenant_id
-  soft_delete_enabled         = false
-  #soft_delete_retention_days  = 7
-  purge_protection_enabled    = false
+# resource "azurerm_key_vault" "akv" {
+#   name                        = var.avk_name
+#   location                    = azurerm_resource_group.rg.location
+#   resource_group_name         = azurerm_resource_group.rg.name
+#   enabled_for_disk_encryption = true
+#   tenant_id                   = data.azurerm_client_config.current.tenant_id
+#   soft_delete_enabled         = false
+#   #soft_delete_retention_days  = 7
+#   purge_protection_enabled    = false
 
-  sku_name = "standard"
+#   sku_name = "standard"
 
-  network_acls {
-    default_action = "Allow"
-    bypass         = "AzureServices"
-  }
+#   network_acls {
+#     default_action = "Allow"
+#     bypass         = "AzureServices"
+#   }
 
-  #tags     = local.common_tags
-}
+#   #tags     = local.common_tags
+# }
 
 
-# Create a Default Azure Key Vault access policy with Admin permissions
-# This policy must be kept for a proper run of the "destroy" process
-resource "azurerm_key_vault_access_policy" "default_policy" {
-  key_vault_id = azurerm_key_vault.akv.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
+# # Create a Default Azure Key Vault access policy with Admin permissions
+# # This policy must be kept for a proper run of the "destroy" process
+# resource "azurerm_key_vault_access_policy" "default_policy" {
+#   key_vault_id = azurerm_key_vault.akv.id
+#   tenant_id    = data.azurerm_client_config.current.tenant_id
+#   object_id    = data.azurerm_client_config.current.object_id
 
-  lifecycle {
-    create_before_destroy = true
-  }
+#   lifecycle {
+#     create_before_destroy = true
+#   }
 
-  #TODO: Ths appid set for this deployment starting with 04b07795 does not have permissions to delete the AKV.  Need to investigate this as the tf destroy doesn't work fully.
-  key_permissions         = ["backup", "create", "decrypt", "delete", "encrypt", "get", "import", "list", "purge", "recover", "restore", "sign", "unwrapKey", "update", "verify", "wrapKey"]
-  secret_permissions      = ["backup", "delete", "get", "list", "purge", "recover", "restore", "set"]
-  certificate_permissions = ["create", "delete", "deleteissuers", "get", "getissuers", "import", "list", "listissuers", "managecontacts", "manageissuers", "purge", "recover", "setissuers", "update", "backup", "restore"]
-  storage_permissions     = ["backup", "delete", "deletesas", "get", "getsas", "list", "listsas", "purge", "recover", "regeneratekey", "restore", "set", "setsas", "update"]
-}
+#   #TODO: Ths appid set for this deployment starting with 04b07795 does not have permissions to delete the AKV.  Need to investigate this as the tf destroy doesn't work fully.
+#   key_permissions         = ["backup", "create", "decrypt", "delete", "encrypt", "get", "import", "list", "purge", "recover", "restore", "sign", "unwrapKey", "update", "verify", "wrapKey"]
+#   secret_permissions      = ["backup", "delete", "get", "list", "purge", "recover", "restore", "set"]
+#   certificate_permissions = ["create", "delete", "deleteissuers", "get", "getissuers", "import", "list", "listissuers", "managecontacts", "manageissuers", "purge", "recover", "setissuers", "update", "backup", "restore"]
+#   storage_permissions     = ["backup", "delete", "deletesas", "get", "getsas", "list", "listsas", "purge", "recover", "regeneratekey", "restore", "set", "setsas", "update"]
+# }
 
-# inject the uid/pwd directly into keyvault
-resource "azurerm_key_vault_secret" "dbuid-secret" {
-  name         = "DBUID"
-  key_vault_id = azurerm_key_vault.akv.id
-  value        = azurerm_postgresql_server.bca-postgres.administrator_login
-}
+# # inject the uid/pwd directly into keyvault
+# resource "azurerm_key_vault_secret" "dbuid-secret" {
+#   name         = "DBUID"
+#   key_vault_id = azurerm_key_vault.akv.id
+#   value        = azurerm_postgresql_server.bca-postgres.administrator_login
+# }
 
-resource "azurerm_key_vault_secret" "dbpwd-secret" {
-  name         = "DBPWD"
-  key_vault_id = azurerm_key_vault.akv.id
-  value        = azurerm_postgresql_server.bca-postgres.administrator_login_password
-}
+# resource "azurerm_key_vault_secret" "dbpwd-secret" {
+#   name         = "DBPWD"
+#   key_vault_id = azurerm_key_vault.akv.id
+#   value        = azurerm_postgresql_server.bca-postgres.administrator_login_password
+# }
 
-resource "azurerm_key_vault_secret" "dbhost-secret" {
-  name         = "DBHOST"
-  key_vault_id = azurerm_key_vault.akv.id
-  value        = azurerm_postgresql_server.bca-postgres.fqdn
-}
+# resource "azurerm_key_vault_secret" "dbhost-secret" {
+#   name         = "DBHOST"
+#   key_vault_id = azurerm_key_vault.akv.id
+#   value        = azurerm_postgresql_server.bca-postgres.fqdn
+# }
 
 resource "azurerm_postgresql_server" "bca-postgres" {
   name                = var.psql_name
@@ -172,9 +172,9 @@ resource "azurerm_postgresql_server" "bca-postgres" {
   version                 = "9.5"
   ssl_enforcement_enabled = true
 
-  depends_on = [
-    azurerm_key_vault.akv,
-  ]
+  # depends_on = [
+  #   azurerm_key_vault.akv,
+  # ]
 }
 
 resource "azurerm_postgresql_database" "strapi" {
