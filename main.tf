@@ -15,17 +15,23 @@ resource "random_password" "psqpassword" {
 }
 
 
-resource "azurerm_resource_group" "rg" {
-  name     = var.rg_name
-  location = var.location
-  # TODO: Add Tag support
-  #tags     = local.common_tags
+# Removed the creation of the resource group as we're locking this down to useing a pre-defined RG.
+# resource "azurerm_resource_group" "rg" {
+#   name     = var.rg_name
+#   location = var.location
+#   # TODO: Add Tag support
+#   #tags     = local.common_tags
+# }
+
+data "azurerm_resource_group" "rg" {
+  name = var.rg_name
 }
+
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_cluster_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = var.rg_name
   dns_prefix          = var.dns_prefix
 
   default_node_pool {
