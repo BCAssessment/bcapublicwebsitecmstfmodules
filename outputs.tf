@@ -1,5 +1,5 @@
-output "rgname" {
-  value       = azurerm_resource_group.rg.name
+output "rg_name" {
+  value       = var.rg_name
   description = "The Resource Group Name"
 }
 
