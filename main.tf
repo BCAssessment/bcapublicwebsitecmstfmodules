@@ -62,7 +62,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
 data "azurerm_kubernetes_cluster" "aks" {
   name                = azurerm_kubernetes_cluster.aks.name
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = var.rg_name
   depends_on = [ 
     azurerm_kubernetes_cluster.aks
   ]
@@ -76,8 +76,8 @@ data "azurerm_kubernetes_cluster" "aks" {
 
 resource "azurerm_container_registry" "acr" {
   name                = var.acr_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = var.rg_name
   sku                 = "Basic"
   admin_enabled       = true
 
@@ -162,8 +162,8 @@ resource "azurerm_container_registry" "acr" {
 
 resource "azurerm_postgresql_server" "bca-postgres" {
   name                = var.psql_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = var.rg_name
 
   sku_name = "B_Gen5_2"
 
@@ -185,7 +185,7 @@ resource "azurerm_postgresql_server" "bca-postgres" {
 
 resource "azurerm_postgresql_database" "strapi" {
   name                = "strapi"
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = var.rg_name
   server_name         = azurerm_postgresql_server.bca-postgres.name
   charset             = "UTF8"
   collation           = "English_United States.1252"
@@ -195,7 +195,7 @@ resource "azurerm_postgresql_database" "strapi" {
 # TODO: will have to assign a Elastic IP then setup an ingress with routes?  The default AKS loadbalancer doesn't seem to init without a deployment.
 resource "azurerm_postgresql_firewall_rule" "postgresql-fw-rule" {
   name                = "AllowAll"
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = var.rg_name
   server_name         = azurerm_postgresql_server.bca-postgres.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "255.255.255.255"
